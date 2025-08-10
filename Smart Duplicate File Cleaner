@@ -1,0 +1,52 @@
+import os
+import hashlib
+def get_file_hash(file_path):
+    """Generates hash for a file"""
+    hasher = hashlib.md5()
+    with open(file_path, 'rb') as f:
+        buf = f.read()
+        hasher.update(buf)
+    return hasher.hexdigest()
+def find_duplicates(folder_path):
+    """Finds all duplicate files in a folder"""
+    hash_dict = {}
+    duplicates = []
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            try:
+                file_hash = get_file_hash(file_path)
+                if file_hash in hash_dict:
+                    duplicates.append(file_path)
+                else:
+                    hash_dict[file_hash] = file_path
+            except:
+                pass
+    return duplicates
+def delete_files(files_list):
+    """Deletes files from the provided list"""
+    for file in files_list:
+        try:
+            os.remove(file)
+            print(f" Deleted: {file}")
+        except Exception as e:
+            print(f"❌ Could not delete {file}: {e}")
+if __name__ == "__main__":
+    folder = input(" Enter folder path to scan: ")
+    if not os.path.exists(folder):
+        print("❌ Folder does not exist!")
+    else:
+        print("\n Scanning for duplicate files...\n")
+        dups = find_duplicates(folder)
+        if dups:
+            print("⚠️ Duplicate files found:")
+            for file in dups:
+                print(file)
+            choice = input("\nDo you want to delete these files? (y/n): ").strip().lower()
+            if choice == 'y':
+                delete_files(dups)
+                print("✅ All selected duplicate files deleted.")
+            else:
+                print(" Files were not deleted.")
+        else:
+            print("✅ No duplicates found.")
